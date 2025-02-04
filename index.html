@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine? 💖</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            font-family: 'Comic Sans MS', cursive;
+            overflow: hidden;
+            transition: background 0.5s, color 0.5s;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transition: background 0.5s;
+            max-width: 90%;
+            margin: 20px;
+        }
+
+        body.dark-mode .container {
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+        }
+
+        h1 {
+            color: #ff4d4d;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #yesBtn {
+            background: #4CAF50;
+            color: white;
+            animation: heartbeat 1s infinite;
+        }
+
+        #noBtn {
+            background: #f44336;
+            color: white;
+            position: relative;
+        }
+
+        /* Heart animation */
+        .hearts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 24px;
+            animation: float 3s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+
+        /* Confetti effect */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff4d4d;
+            animation: confetti 2s linear;
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        /* Hidden success message */
+        .success {
+            display: none;
+            font-size: 3rem;
+            color: #4CAF50;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Heartbeat animation */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Input form */
+        #inputForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #nameInput {
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #ff4d4d;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        #generateLinkBtn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Theme toggle button */
+        #themeToggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        /* Virtual gift */
+        #virtualGift {
+            display: none;
+            font-size: 2rem;
+            margin-top: 20px;
+        }
+
+        /* Share button */
+        #shareBtn {
+            display: none;
+            margin-top: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts" id="hearts"></div>
+    
+    <!-- Dark mode toggle button -->
+    <button id="themeToggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <div class="container">
+        <!-- Input form for sender's name -->
+        <div id="inputForm">
+            <input type="text" id="nameInput" placeholder="Enter your name">
+            <button id="generateLinkBtn" onclick="generateLink()">Generate Link 💌</button>
+        </div>
+
+        <!-- Valentine's Day question (hidden by default) -->
+        <div id="valentineQuestion" style="display: none;">
+            <h1 id="greeting">Will You Be My Valentine, <span id="senderName"></span>? 💝</h1>
+            <div class="buttons">
+                <button id="yesBtn" onclick="accept()">YES! 🥰</button>
+                <button id="noBtn" onmouseover="moveButton()">NO 😢</button>
+            </div>
+            <div class="success" id="success">YAY! 💖 See you on Feb 14th! 🎉</div>
+            <div id="virtualGift">Here's a virtual rose for you! 🌹</div>
+        </div>
+
+        <!-- Share button -->
+        <button id="shareBtn" onclick="shareLink()">Share the Love 💌</button>
+    </div>
+
+    <script>
+        // Function to generate a personalized link
+        function generateLink() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (name === "") {
+                alert("Please enter your name!");
+                return;
+            }
+
+            // Create a unique URL with the sender's name as a query parameter
+            const url = new URL(window.location.href);
+            url.searchParams.set('sender', name);
+            const link = url.toString();
+
+            // Show the link to the user
+            alert(`Copy this link and send it to your Valentine:\n\n${link}`);
+
+            // Show the share button
+            document.getElementById('shareBtn').style.display = 'block';
+        }
+
+        // Function to display the sender's name on the recipient's page
+        function displaySenderName() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const senderName = urlParams.get('sender');
+
+            if (senderName) {
+                // Hide the input form and show the Valentine's Day question
+                document.getElementById('inputForm').style.display = 'none';
+                document.getElementById('valentineQuestion').style.display = 'block';
+                document.getElementById('senderName').textContent = senderName;
+            }
+        }
+
+        // Make NO button move randomly
+        function moveButton() {
+            const noBtn = document.getElementById('noBtn');
+            const x = Math.random() * (window.innerWidth - 100);
+            const y = Math.random() * (window.innerHeight - 100);
+            noBtn.style.transform = `translate(${x - 50}px, ${y - 50}px)`;
+        }
+
+        // Create floating hearts
+        function createHearts() {
+            const heartsContainer = document.getElementById('hearts');
+            for (let i = 0; i < 20; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '💖';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDelay = Math.random() * 2 + 's';
+                heartsContainer.appendChild(heart);
+            }
+        }
+
+        // Handle YES click
+        function accept() {
+            document.querySelector('.buttons').style.display = 'none';
+            document.querySelector('h1').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('virtualGift').style.display = 'block';
+
+            // Add confetti
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                document.body.appendChild(confetti);
+
+                // Remove confetti after animation
+                setTimeout(() => confetti.remove(), 2000);
+            }
+
+            // Notify the sender (mock implementation)
+            notifySender("YES");
+        }
+
+        // Handle NO click
+        function reject() {
+            notifySender("NO");
+        }
+
+        // Function to notify the sender (mock implementation)
+        function notifySender(answer) {
+            const senderName = document.getElementById('senderName').textContent;
+            alert(`Notification sent to ${senderName}: Your Valentine chose ${answer}!`);
+        }
+
+        // Function to toggle themes
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const themeToggle = document.getElementById('themeToggle');
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.textContent = '☀️ Light Mode';
+            } else {
+                themeToggle.textContent = '🌙 Dark Mode';
+            }
+        }
+
+        // Function to share the link
+        function shareLink() {
+            const url = new URL(window.location.href);
+            const senderName = document.getElementById('nameInput').value.trim();
+            url.searchParams.set('sender', senderName);
+            const link = url.toString();
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Will You Be My Valentine?',
+                    text: `Hi! I made this special Valentine's Day page for you. Will you be my Valentine?`,
+                    url: link,
+                });
+            } else {
+                alert(`Copy this link and share it:\n\n${link}`);
+            }
+        }
+
+        // Initialize floating hearts and display sender's name
+        createHearts();
+        displaySenderName();
+    </script>
+</body>
+</html>
